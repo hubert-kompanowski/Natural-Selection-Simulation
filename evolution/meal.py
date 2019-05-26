@@ -1,16 +1,16 @@
 from random import randrange
 import pygame
+from colors import *
 
 
 class Meal:
-    def __init__(self, _screen, i):
+    def __init__(self, _screen, map, id_):
         self.exist = True
-        (self.x, self.y) = (randrange(i), randrange(i))
+        (self.x, self.y) = (randrange(map[0], map[1]), randrange(map[0], map[1]))
         self.screen = _screen
-        pygame.draw.circle(self.screen, (255, 0, 0), (self.x, self.y), 5)
+        self.draw()
+        self.id = id_
 
-    def __del__(self):
-        pygame.draw.circle(self.screen, (255, 255, 255), (self.x, self.y), 10)
-
-
-
+    def draw(self):
+        if self.exist:
+            pygame.draw.circle(self.screen, GREEN, (self.x, self.y), 5)
