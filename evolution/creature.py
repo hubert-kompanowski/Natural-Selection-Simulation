@@ -1,23 +1,19 @@
-import pygame
 import math
-from colors import *
-from pygame.math import Vector2
-import time
 
 
 class Creature:
-    def __init__(self, x_, y_, index_):
+    def __init__(self, x_, y_, index_, velocity_=3.0, range_=600):
         self.index = index_
         self.pos = (x_, y_)
         self.start_pos = (x_, y_)
-        self.velocity = 5.0
+        self.velocity = velocity_
         self.actual_step = 0
         self.move_plan = []
         self.actual_step_to_home = 0
         self.move_home_plan = []
 
-        self.range = 600
-        self.max_energy = 100.0
+        self.range = range_
+        self.max_energy = 90.0*300/self.range
         self.actual_energy = self.max_energy
         self.eaten_meals = 0
 
@@ -29,21 +25,21 @@ class Creature:
         self.meal_id = -1
 
     def move(self):
-
-        print(str(self.index), end=" is ")
-        if not self.is_alive:
-            print("dead ", end=", ")
-        else:
-            print("alive", end=", ")
-        if self.returned:
-            print("    returned", end=", ")
-        else:
-            print("not returned", end=", ")
-        if self.returning:
-            print("    returning", end=", ")
-        else:
-            print("not returning", end=", ")
-        print("eat " + str(self.eaten_meals) + " meals")
+        #
+        # print(str(self.index), end=" is ")
+        # if not self.is_alive:
+        #     print("dead ", end=", ")
+        # else:
+        #     print("alive", end=", ")
+        # if self.returned:
+        #     print("    returned", end=", ")
+        # else:
+        #     print("not returned", end=", ")
+        # if self.returning:
+        #     print("    returning", end=", ")
+        # else:
+        #     print("not returning", end=", ")
+        # print("eat " + str(self.eaten_meals) + " meals")
 
         if self.returned:
             self.returning = False
@@ -73,7 +69,9 @@ class Creature:
             self.pos = self.move_plan[self.actual_step]
 
         if not self.is_eaten:
-            self.actual_energy -= 1
+            self.actual_energy -= 1 * self.velocity * self.velocity / 25
+            if self.actual_energy < 0:
+                self.actual_energy = 0.0
 
         return -1
 
@@ -84,13 +82,17 @@ class Creature:
 
         else:
             self.actual_step_to_home += 1
-            self.pos = self.move_home_plan[self.actual_step_to_home]
+            if self.actual_step_to_home < len(self.move_home_plan):
+                self.pos = self.move_home_plan[self.actual_step_to_home]
+            else:
+                self.pos = self.start_pos
+
 
     def move_rand(self):
         pass
 
     def search(self, meals):
-        print("search")
+        # print("search")
 
         if len(meals) == 0 and self.eaten_meals == 0:
             self.is_alive = False
@@ -138,13 +140,11 @@ class Creature:
 
         # else:
 
-
-
     def find_path_to_home(self):
         self.actual_step_to_home = 0
         self.move_home_plan.clear()
 
-        step_to_achieve = 15
+        step_to_achieve = 20 - math.floor(self.velocity)
         dest_x = self.start_pos[0]
         dest_y = self.start_pos[1]
         self.meal_id = -1
