@@ -49,7 +49,7 @@ class Evolution:
                     Creature(math.floor(x_pos + i // 4 * self.cr_pos / (self.creatures_number / 4)),
                              self.map_size - 10, i))
 
-    def day(self, delay, draw):
+    def day(self, delay, draw, only_vel=True):
         self.hist_vel = []
         self.hist_ran = []
         self.meals = [Meal(self.screen, self.meal_map_size, i) for i in range(1, self.meals_numbers + 1)]
@@ -64,7 +64,7 @@ class Evolution:
             pygame.display.update()
         time.sleep(delay * 3)
         # print()
-        while self.loop(delay, draw):
+        while self.loop(delay, draw, only_vel):
             if draw:
                 self.screen.fill(WHITE)
             pass
@@ -100,13 +100,16 @@ class Evolution:
                     vel = vel + 0.22 * vel
                 if random_num < -5:
                     vel = vel - 0.22 * vel
+                if not only_vel:
+                    ran = c.range
+                    random_num = randrange(20) - 10
+                    if random_num > 5:
+                        ran = ran + 0.5 * ran
+                    if random_num < -5:
+                        ran = ran - 0.5 * ran
 
-                ran = c.range
-                random_num = randrange(20) - 10
-                if random_num > 5:
-                    ran = ran + 0.5 * ran
-                if random_num < -5:
-                    ran = ran - 0.5 * ran
+                else:
+                    ran = 600
 
                 to_add.append(Creature(pos_0, pos_1, 55, vel, ran))
 
@@ -128,14 +131,14 @@ class Evolution:
         self.screen.fill(WHITE)
         time.sleep(delay * 3)
 
-    def loop(self, delay, draw):
+    def loop(self, delay, draw, only_vel):
         for m in self.meals:
             if draw:
                 m.draw()
 
         for c in self.creatures:
 
-            eaten_meal_id = c.move()
+            eaten_meal_id = c.move(only_vel)
 
             if c.is_alive:
                 if draw:
@@ -156,7 +159,6 @@ class Evolution:
                 return True
 
         returning = False
-        all_returned = True
         all_dead_or_returned = True
         for c in self.creatures:
             if c.returning:
@@ -187,27 +189,42 @@ class Evolution:
 if __name__ == '__main__':
     evolution = Evolution()
     delay = 0
+    only_vel = False
 
-    for i in range(5):
-        evolution.day(delay, draw=True)
-        print("Average of velocity = " + str(math.fsum(evolution.hist_vel) / len(evolution.hist_vel)))
-        print("Average of range = " + str(math.fsum(evolution.hist_ran) / len(evolution.hist_ran)))
-
-        n, bins, patches = plt.hist(evolution.hist_vel, range=(0, 20), bins=15)
-        x = 0
-        for p in patches:
-            col = x / 20
-            p.set_facecolor((col, 0.0, 1.0 - col, 1.0))
-            x += 1
-        plt.show()
-
-    delay = 0
-    for i in range(300):
-
-        evolution.day(delay, draw=True)
-        if i % 10 == 0:
+    if not only_vel:
+        for i in range(4):
+            evolution.day(delay, draw=True, only_vel=only_vel)
             print("Average of velocity = " + str(math.fsum(evolution.hist_vel) / len(evolution.hist_vel)))
             print("Average of range = " + str(math.fsum(evolution.hist_ran) / len(evolution.hist_ran)))
+            fig2 = plt.figure()
+            plt.hist2d(evolution.hist_vel, evolution.hist_ran, bins=10, range=[[0, 20], [0, 1000]])
+            plt.xlabel('velocity')
+            plt.ylabel('range')
+            cbar = plt.colorbar()
+            cbar.ax.set_ylabel('Counts')
+            plt.show()
+
+        for i in range(1000):
+            evolution.day(delay, draw=False, only_vel=only_vel)
+            print("Average of velocity = " + str(math.fsum(evolution.hist_vel) / len(evolution.hist_vel)))
+            print("Average of range = " + str(math.fsum(evolution.hist_ran) / len(evolution.hist_ran)))
+            if i % 25 == 0:
+                fig2 = plt.figure()
+                plt.hist2d(evolution.hist_vel, evolution.hist_ran, bins=10, range=[[0, 20], [0, 1000]])
+                plt.xlabel('velocity')
+                plt.ylabel('range')
+                cbar = plt.colorbar()
+                cbar.ax.set_ylabel('Counts')
+                plt.show()
+
+        pass
+    else:
+
+        for i in range(5):
+            evolution.day(delay, draw=True, only_vel=only_vel)
+            print("Average of velocity = " + str(math.fsum(evolution.hist_vel) / len(evolution.hist_vel)))
+            print("Average of range = " + str(math.fsum(evolution.hist_ran) / len(evolution.hist_ran)))
+
             n, bins, patches = plt.hist(evolution.hist_vel, range=(0, 20), bins=15)
             x = 0
             for p in patches:
@@ -216,13 +233,28 @@ if __name__ == '__main__':
                 x += 1
             plt.show()
 
-    delay = 1 / 30
-    for i in range(15):
-        evolution.day(delay, draw=True)
-        n, bins, patches = plt.hist(evolution.hist_vel, range=(0, 20), bins=15)
-        x = 0
-        for p in patches:
-            col = x / 20
-            p.set_facecolor((col, 0.0, 1.0 - col, 1.0))
-            x += 1
-        plt.show()
+        delay = 0
+        for i in range(300):
+
+            evolution.day(delay, draw=True, only_vel=only_vel)
+            if i % 10 == 0:
+                print("Average of velocity = " + str(math.fsum(evolution.hist_vel) / len(evolution.hist_vel)))
+                print("Average of range = " + str(math.fsum(evolution.hist_ran) / len(evolution.hist_ran)))
+                n, bins, patches = plt.hist(evolution.hist_vel, range=(0, 20), bins=15)
+                x = 0
+                for p in patches:
+                    col = x / 20
+                    p.set_facecolor((col, 0.0, 1.0 - col, 1.0))
+                    x += 1
+                plt.show()
+
+        delay = 1 / 30
+        for i in range(10):
+            evolution.day(delay, draw=True, only_vel=only_vel)
+            n, bins, patches = plt.hist(evolution.hist_vel, range=(0, 20), bins=15)
+            x = 0
+            for p in patches:
+                col = x / 20
+                p.set_facecolor((col, 0.0, 1.0 - col, 1.0))
+                x += 1
+            plt.show()
