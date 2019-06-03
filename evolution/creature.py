@@ -3,7 +3,7 @@ from random import randrange
 
 
 class Creature:
-    def __init__(self, x_, y_, index_, velocity_=4.0, range_=200, only_vel=True):
+    def __init__(self, x_, y_, index_, velocity_=4.0, range_= 1000, only_vel=True):
         self.index = index_
         self.pos = (x_, y_)
         self.start_pos = (x_, y_)
@@ -14,10 +14,8 @@ class Creature:
         self.move_home_plan = []
 
         self.range = range_
-        if not only_vel:
-            self.max_energy = 90.0 * 300 / self.range
-        else:
-            self.max_energy = 90.0
+
+        self.max_energy = 90.0
         self.actual_energy = self.max_energy
 
         self.eaten_meals = 0
@@ -74,7 +72,10 @@ class Creature:
             self.pos = self.move_plan[self.actual_step]
 
         if not self.is_eaten:
-            self.actual_energy -= 1 * self.velocity * self.velocity / 25
+            if only_vel:
+                self.actual_energy -= 1 * self.velocity * self.velocity / 25
+            else:
+                self.actual_energy -= 1 * self.velocity * self.velocity / 25 * self.range / 300
             if self.actual_energy < 0:
                 self.actual_energy = 0.0
 

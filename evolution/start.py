@@ -50,8 +50,8 @@ class Evolution:
                              self.map_size - 10, i))
 
     def day(self, delay, draw, only_vel=True):
-        self.hist_vel = []
-        self.hist_ran = []
+        self.hist_vel = [0]
+        self.hist_ran = [0]
         self.meals = [Meal(self.screen, self.meal_map_size, i) for i in range(1, self.meals_numbers + 1)]
         for c in self.creatures:
             self.hist_vel.append(math.floor(c.velocity * 10) / 10)
@@ -94,6 +94,20 @@ class Evolution:
                 if pos_1 < 0 or pos_1 > self.map_size:
                     pos_1 = c.pos[1]
 
+                x = randrange(10)
+                if x == 0:
+                    pos_0 = 10
+                    pos_1 = math.floor(self.map_size / 2)
+                if x == 1:
+                    pos_0 = self.map_size - 10
+                    pos_1 = math.floor(self.map_size / 2)
+                if x == 2:
+                    pos_1 = 10
+                    pos_0 = math.floor(self.map_size / 2)
+                if x == 3:
+                    pos_1 = self.map_size - 10
+                    pos_0 = math.floor(self.map_size / 2)
+
                 vel = c.velocity
                 random_num = randrange(20) - 10
                 if random_num > 5:
@@ -104,9 +118,9 @@ class Evolution:
                     ran = c.range
                     random_num = randrange(20) - 10
                     if random_num > 5:
-                        ran = ran + 0.5 * ran
+                        ran = ran + 0.1 * ran
                     if random_num < -5:
-                        ran = ran - 0.5 * ran
+                        ran = ran - 0.1 * ran
 
                 else:
                     ran = 600
@@ -183,16 +197,16 @@ class Evolution:
             red = 254
         if red < 0:
             red = 0
-        return (red, 0, 255 - red)
+        return red, 0, 255 - red
 
 
 if __name__ == '__main__':
     evolution = Evolution()
-    delay = 0
-    only_vel = False
+    only_vel = True
 
     if not only_vel:
-        for i in range(4):
+        delay = 1 / 60
+        for i in range(10):
             evolution.day(delay, draw=True, only_vel=only_vel)
             print("Average of velocity = " + str(math.fsum(evolution.hist_vel) / len(evolution.hist_vel)))
             print("Average of range = " + str(math.fsum(evolution.hist_ran) / len(evolution.hist_ran)))
@@ -203,9 +217,36 @@ if __name__ == '__main__':
             cbar = plt.colorbar()
             cbar.ax.set_ylabel('Counts')
             plt.show()
+        delay = 0
+        for i in range(100):
+            evolution.day(delay, draw=True, only_vel=only_vel)
+            print("Average of velocity = " + str(math.fsum(evolution.hist_vel) / len(evolution.hist_vel)))
+            print("Average of range = " + str(math.fsum(evolution.hist_ran) / len(evolution.hist_ran)))
+            if i % 25 == 0:
+                fig2 = plt.figure()
+                plt.hist2d(evolution.hist_vel, evolution.hist_ran, bins=10, range=[[0, 20], [0, 1000]])
+                plt.xlabel('velocity')
+                plt.ylabel('range')
+                cbar = plt.colorbar()
+                cbar.ax.set_ylabel('Counts')
+                plt.show()
 
-        for i in range(1000):
+        delay = 0
+        for i in range(700):
             evolution.day(delay, draw=False, only_vel=only_vel)
+            print("Average of velocity = " + str(math.fsum(evolution.hist_vel) / len(evolution.hist_vel)))
+            print("Average of range = " + str(math.fsum(evolution.hist_ran) / len(evolution.hist_ran)))
+            if i % 25 == 0:
+                fig2 = plt.figure()
+                plt.hist2d(evolution.hist_vel, evolution.hist_ran, bins=10, range=[[0, 20], [0, 1000]])
+                plt.xlabel('velocity')
+                plt.ylabel('range')
+                cbar = plt.colorbar()
+                cbar.ax.set_ylabel('Counts')
+                plt.show()
+        delay = 1 / 60
+        for i in range(10):
+            evolution.day(delay, draw=True, only_vel=only_vel)
             print("Average of velocity = " + str(math.fsum(evolution.hist_vel) / len(evolution.hist_vel)))
             print("Average of range = " + str(math.fsum(evolution.hist_ran) / len(evolution.hist_ran)))
             if i % 25 == 0:
@@ -220,11 +261,10 @@ if __name__ == '__main__':
         pass
     else:
 
-        for i in range(5):
+        delay = 1 / 60
+        for i in range(10):
             evolution.day(delay, draw=True, only_vel=only_vel)
             print("Average of velocity = " + str(math.fsum(evolution.hist_vel) / len(evolution.hist_vel)))
-            print("Average of range = " + str(math.fsum(evolution.hist_ran) / len(evolution.hist_ran)))
-
             n, bins, patches = plt.hist(evolution.hist_vel, range=(0, 20), bins=15)
             x = 0
             for p in patches:
@@ -234,12 +274,10 @@ if __name__ == '__main__':
             plt.show()
 
         delay = 0
-        for i in range(300):
-
+        for i in range(100):
             evolution.day(delay, draw=True, only_vel=only_vel)
             if i % 10 == 0:
                 print("Average of velocity = " + str(math.fsum(evolution.hist_vel) / len(evolution.hist_vel)))
-                print("Average of range = " + str(math.fsum(evolution.hist_ran) / len(evolution.hist_ran)))
                 n, bins, patches = plt.hist(evolution.hist_vel, range=(0, 20), bins=15)
                 x = 0
                 for p in patches:
@@ -248,9 +286,23 @@ if __name__ == '__main__':
                     x += 1
                 plt.show()
 
-        delay = 1 / 30
+        delay = 0
+        for i in range(700):
+            evolution.day(delay, draw=False, only_vel=only_vel)
+            if i % 10 == 0:
+                print("Average of velocity = " + str(math.fsum(evolution.hist_vel) / len(evolution.hist_vel)))
+                n, bins, patches = plt.hist(evolution.hist_vel, range=(0, 20), bins=15)
+                x = 0
+                for p in patches:
+                    col = x / 20
+                    p.set_facecolor((col, 0.0, 1.0 - col, 1.0))
+                    x += 1
+                plt.show()
+
+        delay = 1 / 60
         for i in range(10):
             evolution.day(delay, draw=True, only_vel=only_vel)
+            print("Average of velocity = " + str(math.fsum(evolution.hist_vel) / len(evolution.hist_vel)))
             n, bins, patches = plt.hist(evolution.hist_vel, range=(0, 20), bins=15)
             x = 0
             for p in patches:
